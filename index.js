@@ -37,7 +37,7 @@ const github = require('@actions/github');
                     continue;
                 }
 
-                core.info(JSON.stringify(deployment.environment));
+                core.info(JSON.stringify(deployment));
                 
                 core.info(`Status: ${deployment.environment} (#${deployment.id}) ${statuses[0].state}`);
                 // The list of statuses is sorted on last to first.
