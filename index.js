@@ -72,6 +72,9 @@ async function waitForDeployment(options) {
     if (elapsed >= timeout) {
       throw new Error(`Timing out after ${timeout} seconds (${elapsed} seconds elapsed)`);
     }
+
+    await sleep(interval); // Debug if this is correctly pausing
+
   }
 }
 
