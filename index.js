@@ -27,11 +27,11 @@ const github = require('@actions/github');
                 if (seenEnvironments[deployment.environment]) {
                     continue;
                 }
-                const {data: statuses } = await octokit.repos.listDeploymentStatuses({
-                    owner,
-                    repo,
-                    deployment_id: deployment.id
-                });
+                // const {data: statuses } = await octokit.repos.listDeploymentStatuses({
+                //     owner,
+                //     repo,
+                //     deployment_id: deployment.id
+                // });
                 // // Ignore deployments without statuses
                 // if (statuses.length < 1) {
                 //     continue;
@@ -45,10 +45,10 @@ const github = require('@actions/github');
                     environment: deployment.environment,
                     deployment_id: deployment.id,
                     deployment_url: deployment.url,
-                    status: statuses[0].state,
+                    // status: statuses[0].state,
                     ref: deployment.ref,
                     deployment: deployment,
-                    deployment_status: statuses[0]
+                    // deployment_status: statuses[0]
                 });
             }
         }
