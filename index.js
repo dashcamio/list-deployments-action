@@ -38,7 +38,7 @@ const github = require('@actions/github');
                 }
 
                 core.info(deployment.sha)
-                core.infi(deployment.url)
+                core.info(deployment.url)
                 core.info(deployment.ref);
                 
                 core.info(`Status: ${deployment.environment} (#${deployment.id}) ${statuses[0].state}`);
