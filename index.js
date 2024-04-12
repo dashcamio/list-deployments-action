@@ -39,7 +39,7 @@ const github = require('@actions/github');
             //         continue;
             //     }
 
-            core.info(deployment.sha + ' ' + deployment.url + ' ' + deployment.ref + ')
+            core.info(deployment.sha + ' ' + deployment.url + ' ' + deployment.ref)
 
             if (deployment.ref == ref) {
                 core.info('MATCHES!!!!')
