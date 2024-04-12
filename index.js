@@ -1,61 +1,85 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-(async function() {
-    try {
-        const repository = core.getInput('repository');
-        core.info(`Listing deployments for ${repository}`);
+const options = {
+  token: core.getInput('github-token'),
+  environment: core.getInput('environment'),
+  timeout: core.getInput('timeout'),
+  interval: core.getInput('interval')
+};
 
-        const [owner, repo] = repository.split('/');
-        const authToken = core.getInput('token');
-        const ref = core.getInput('ref');
-        const octokit = github.getOctokit(authToken);
+console.log(`Interval input: ${options.interval}`);  // Debug the interval input
 
-        const output = [];
-        const seenEnvironments = [];
+waitForDeployment(options)
+  .then(res => {
+    core.setOutput('id', res.deployment.id);
+    core.setOutput('url', res.url);
+  })
+  .catch(error => {
+    core.setFailed(error.message);
+  });
 
-        for await (const {data: deployments} of octokit.paginate.iterator(
-            octokit.repos.listDeployments,
-            {
-                owner,
-                repo,
-                ref
-            }
-        )) {
-            for (const deployment of deployments) {
-                core.info(`Deployment: ${deployment.environment} (#${deployment.id})`);
-                if (seenEnvironments[deployment.environment]) {
-                    continue;
-                }
-                // const {data: statuses } = await octokit.repos.listDeploymentStatuses({
-                //     owner,
-                //     repo,
-                //     deployment_id: deployment.id
-                // });
-                // // Ignore deployments without statuses
-                // if (statuses.length < 1) {
-                //     continue;
-                // }
-                
-                // core.info(`Status: ${deployment.environment} (#${deployment.id}) ${statuses[0].state}`);
-                // The list of statuses is sorted on last to first.
-                // If it is not queued, this deployment has already been handled.
-                seenEnvironments[deployment.environment] = true;
-                output.push({
-                    environment: deployment.environment,
-                    deployment_id: deployment.id,
-                    deployment_url: deployment.url,
-                    // status: statuses[0].state,
-                    ref: deployment.ref,
-                    deployment: deployment,
-                    // deployment_status: statuses[0]
-                });
-            }
+async function waitForDeployment(options) {
+  const { token, interval, environment } = options;
+  const timeout = parseInt(options.timeout, 10) || 30;
+
+  const { sha } = github.context;
+  const octokit = github.getOctokit(token);
+  const start = Date.now();
+
+  const params = {
+    ...github.context.repo,
+    environment,
+    sha
+  };
+
+  core.info(`Deployment params: ${JSON.stringify(params, null, 2)}`);
+
+  while (true) {
+    const { data: deployments } = await octokit.repos.listDeployments(params);
+    core.info(`Found ${deployments.length} deployments...`);
+
+    for (const deployment of deployments) {
+      core.info(`\tgetting statuses for deployment ${deployment.id}...`);
+
+      const { data: statuses } = await octokit.request('GET /repos/:owner/:repo/deployments/:deployment/statuses', {
+        ...github.context.repo,
+        deployment: deployment.id
+      });
+
+      core.info(`\tfound ${statuses.length} statuses`);
+
+      const successStatus = statuses.find(status => status.state === 'success');
+      if (successStatus) {
+        core.info(`\tsuccess! ${JSON.stringify(successStatus, null, 2)}`);
+        let url = successStatus.target_url;
+        if (deployment.payload && deployment.payload.web_url) {
+          url = deployment.payload.web_url;
         }
-        core.info(`Matrix: ${JSON.stringify(output)}`);
-        core.setOutput('deployments', {include: output});
-    } catch (error) {
-        core.debug(error);
-        core.setFailed(error.message);
+        return {
+          deployment,
+          status: successStatus,
+          url
+        };
+      } else {
+        core.info(`No statuses with state === "success": "${statuses.map(status => status.state).join('", "')}"`);
+      }
+
+      await sleep(interval); // Debug if this is correctly pausing
     }
-})();
+
+    const elapsed = (Date.now() - start) / 1000;
+    if (elapsed >= timeout) {
+      throw new Error(`Timing out after ${timeout} seconds (${elapsed} seconds elapsed)`);
+    }
+  }
+}
+
+function sleep(seconds) {
+  const ms = parseInt(seconds, 10) * 1000;
+  if (isNaN(ms) || ms <= 0) {
+    console.error('Invalid interval. Using default 1000ms.');
+    return new Promise(resolve => setTimeout(resolve, 1000));
+  }
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
