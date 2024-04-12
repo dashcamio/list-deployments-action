@@ -18,8 +18,7 @@ const github = require('@actions/github');
             octokit.repos.listDeployments,
             {
                 owner,
-                repo,
-                ref
+                repo
             }
         )) {
 
