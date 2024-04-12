@@ -39,6 +39,11 @@ const github = require('@actions/github');
             //     }
 
             core.info(deployment.sha + ' ' + deployment.url + ' ' + deployment.ref)
+
+            if (deployment.ref == ref) {
+                core.info('MATCHES!!!!')
+            }
+
                 
             //     core.info(`Status: ${deployment.environment} (#${deployment.id}) ${statuses[0].state}`);
             //     // The list of statuses is sorted on last to first.
