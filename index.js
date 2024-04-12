@@ -37,7 +37,7 @@ const github = require('@actions/github');
                 //     continue;
                 // }
                 
-                core.info(`Status: ${deployment.environment} (#${deployment.id}) ${statuses[0].state}`);
+                // core.info(`Status: ${deployment.environment} (#${deployment.id}) ${statuses[0].state}`);
                 // The list of statuses is sorted on last to first.
                 // If it is not queued, this deployment has already been handled.
                 seenEnvironments[deployment.environment] = true;
