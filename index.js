@@ -32,10 +32,10 @@ const github = require('@actions/github');
                     repo,
                     deployment_id: deployment.id
                 });
-                // Ignore deployments without statuses
-                if (statuses.length < 1) {
-                    continue;
-                }
+                // // Ignore deployments without statuses
+                // if (statuses.length < 1) {
+                //     continue;
+                // }
                 
                 core.info(`Status: ${deployment.environment} (#${deployment.id}) ${statuses[0].state}`);
                 // The list of statuses is sorted on last to first.
