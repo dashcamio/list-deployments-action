@@ -37,7 +37,9 @@ const github = require('@actions/github');
                     continue;
                 }
 
-                core.info(deployment.sha, deployment.url, deployment.ref);
+                core.info(deployment.sha)
+                core.infi(deployment.url)
+                core.info(deployment.ref);
                 
                 core.info(`Status: ${deployment.environment} (#${deployment.id}) ${statuses[0].state}`);
                 // The list of statuses is sorted on last to first.
