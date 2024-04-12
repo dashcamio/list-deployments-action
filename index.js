@@ -14,6 +14,8 @@ const github = require('@actions/github');
         const output = [];
         const seenEnvironments = [];
 
+        core.info('looking for ' + ref)
+
         for await (const {data: deployments} of octokit.paginate.iterator(
             octokit.repos.listDeployments,
             {
@@ -37,7 +39,7 @@ const github = require('@actions/github');
             //         continue;
             //     }
 
-            core.info(deployment.sha + ' ' + deployment.url + ' ' + deployment.ref + ' / ' + ref)
+            core.info(deployment.sha + ' ' + deployment.url + ' ' + deployment.ref + ')
 
             if (deployment.ref == ref) {
                 core.info('MATCHES!!!!')
