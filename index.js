@@ -24,6 +24,7 @@ const github = require('@actions/github');
         )) {
             for (const deployment of deployments) {
                 core.info(`Deployment: ${deployment.environment} (#${deployment.id})`);
+                console.log(deployment)
                 if (seenEnvironments[deployment.environment]) {
                     continue;
                 }
